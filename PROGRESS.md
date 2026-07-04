@@ -20,14 +20,24 @@ faithful, behavior-preserving copy of imputation-paper's
 - Confirmed `test_parity.py` asserts exact `==` equality vs the paper originals
   with a non-vacuous opportunistic skip (finds sibling checkout).
 
+## Verified (this session)
+- [x] 1. Full test suite in worktree venv: **29 passed in 143.91s** (Python
+  3.13.9). Breakdown: floors 6, metrics 10, parity 9, views 4. The 9 parity
+  tests RAN (not skipped) against the sibling
+  `~/PolicyEngine/imputation-paper` checkout and asserted exact `==` equality;
+  extraction confirmed bit-identical to the paper originals.
+- [x] 2. `ruff check .` → all checks passed. `ruff format --check .` → 8 files
+  already formatted. Both exit 0.
+- [x] 3. `uv build` → sdist + wheel built. `uvx twine check dist/*` → both
+  PASSED. Exit 0. (`dist/` is gitignored; `uv.lock` gitignored+untracked.)
+
 ## Next
-1. Run full test suite in worktree venv (parity + floors + metrics + views).
-2. Run ruff check + ruff format --check.
-3. Run `uv build` + `twine check` locally (mirror CI build job).
 4. Draft JOSS `paper.md` + `paper.bib` (author = Max Ghenis + TODO note on
-   authorship alignment; do NOT presume María Juaristi co-authorship).
+   authorship alignment; do NOT presume María Juaristi co-authorship;
+   canonical citations for energy distance / PRDC / C2ST).
 5. Push after each coherent step; update this file each push.
 6. Open PR via `gh pr create --body-file` (draft; lead reviews). Do NOT merge.
+   Delete this file in the final cleanup commit.
 
 ## Decisions / constraints honored
 - Metric semantics are guardian-owned: extracted faithfully, no "improvements".
