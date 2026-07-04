@@ -121,9 +121,7 @@ def sample_reference_scorecard(
             raise KeyError(
                 f"No survey table for view {view.name!r}; have {sorted(surveys)}."
             )
-        split = split_frame(
-            surveys[view.name], holdout_frac=holdout_frac, seed=seed
-        )
+        split = split_frame(surveys[view.name], holdout_frac=holdout_frac, seed=seed)
         rows.extend(
             harness_scorecard(
                 split.train,
