@@ -31,11 +31,30 @@ faithful, behavior-preserving copy of imputation-paper's
 - [x] 3. `uv build` → sdist + wheel built. `uvx twine check dist/*` → both
   PASSED. Exit 0. (`dist/` is gitignored; `uv.lock` gitignored+untracked.)
 
+- [x] 4. Drafted JOSS `paper.md` + `paper.bib`. Author = Max Ghenis (sole),
+  ORCID 0000-0002-1335-8277 (verified from PolicyEngine's own
+  policyengine.py JOSS submission), affiliation PolicyEngine, Washington DC.
+  TWO `TODO(authorship)` comments in paper.md (author block + Acknowledgements)
+  flag pending authorship alignment; NO presumed co-authors (María Juaristi
+  not listed). Canonical citations, all verified this session:
+  energy distance = Szekely & Rizzo (2013) JSPI 143(8):1249-1272
+  doi:10.1016/j.jspi.2013.03.018; PRDC = Naeem et al. (2020) ICML PMLR
+  v119:7176-7185; C2ST = Lopez-Paz & Oquab (2017) ICLR arXiv:1610.06545;
+  Wasserstein = Ramdas et al. (2017) Entropy 19(2):47 doi:10.3390/e19020047;
+  plus @imputation_paper software entry. All 5 bib keys cross-checked to
+  resolve. YAML front-matter parses cleanly (pyyaml); TODO comments stripped,
+  do not leak into values. Every technical claim cross-checked against the
+  source (weight->uniform fallback, coverage reweight-invariance, C2ST
+  equal-mass, uncapped tail block, strictly-proper energy distance).
+- [x] LICENSE added (MIT), matching the pre-existing `license = {text="MIT"}`
+  in pyproject. JOSS requires an OSI license file and the repo had none.
+  Now packaged into sdist+wheel (`License-File: LICENSE` in metadata);
+  lint/build/twine re-run green with it present. FLAG FOR LEAD: org core
+  packages (policyengine.py) are AGPL-3.0; MIT here follows the committed
+  pyproject decision, not a new choice by me -- confirm MIT is intended.
+
 ## Next
-4. Draft JOSS `paper.md` + `paper.bib` (author = Max Ghenis + TODO note on
-   authorship alignment; do NOT presume María Juaristi co-authorship;
-   canonical citations for energy distance / PRDC / C2ST).
-5. Push after each coherent step; update this file each push.
+5. Push after each coherent step; update this file each push. (Done through 4.)
 6. Open PR via `gh pr create --body-file` (draft; lead reviews). Do NOT merge.
    Delete this file in the final cleanup commit.
 
