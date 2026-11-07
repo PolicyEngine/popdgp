@@ -5,7 +5,7 @@
 Work in this portfolio routes by issue label: `tier:fable` (frontier-model:
 design, claim-bearing prose, statistical semantics) versus `tier:standard`
 (spec-complete build/assembly; acceptance tests judge the output). Full
-doctrine: PolicyEngine/populace#305.
+doctrine: PolicyEngine/microcosm#305.
 
 ## Guardian files
 
