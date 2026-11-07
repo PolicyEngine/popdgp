@@ -28,7 +28,7 @@ holdouts appear nowhere upstream of the candidates being scored.
 ## Lineage and status
 
 Successor to the original `CosilicoAI/popdgp` (which also tried to *build*
-the generator; this package deliberately does not — populace and anyone
+the generator; this package deliberately does not — Microcosm and anyone
 else's generators are contestants, popdgp is the referee). First application
 and reference implementation:
 [imputation-paper](https://github.com/PolicyEngine/imputation-paper)
