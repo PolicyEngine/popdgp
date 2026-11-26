@@ -63,3 +63,6 @@ jobs:
 
       - name: Check the distribution metadata
         run: uvx twine check dist/*
+
+      - name: Run the quick start against the built wheel
+        run: uv run --python 3.13 --isolated --no-project --with dist/*.whl python examples/quickstart.py

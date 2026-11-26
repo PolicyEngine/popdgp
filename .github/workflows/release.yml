@@ -1,0 +1,78 @@
+name: Release
+
+# Publishes popdgp to PyPI when a GitHub Release is published. The release tag
+# must be the package version, with or without a leading "v" (0.1.0 or v0.1.0).
+#
+# PyPI trusted publishing: PyPI accepts uploads only from this workflow in the
+# pypi environment. No stored token. One-time setup is in CONTRIBUTING.md.
+#
+# Run it by hand (workflow_dispatch) to build and check the distribution
+# without publishing.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out popdgp
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install Python
+        run: uv python install 3.13
+
+      - name: Check that the release tag is the package version
+        if: github.event_name == 'release'
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          version=$(uv run --python 3.13 python -c "import popdgp; print(popdgp.__version__)")
+          if [ "${TAG#v}" != "$version" ]; then
+            echo "::error::Release tag $TAG does not match package version $version."
+            exit 1
+          fi
+
+      - name: Run tests
+        run: uv run --python 3.13 pytest
+
+      - name: Build the distribution
+        run: uv build
+
+      - name: Check the distribution metadata
+        run: uvx twine check dist/*
+
+      - name: Run the quick start against the built wheel
+        run: uv run --python 3.13 --isolated --no-project --with dist/*.whl python examples/quickstart.py
+
+      - name: Keep the distribution for the publish job
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    name: Publish to PyPI
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write # OIDC token for PyPI trusted publishing
+
+    steps:
+      - name: Fetch the distribution
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
