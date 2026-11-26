@@ -20,3 +20,25 @@ semantics):
   weighted reductions
 - view projection and floor construction
 - any holdout or split logic
+
+## Releasing
+
+Releases go to PyPI from `.github/workflows/release.yml`, by PyPI trusted
+publishing (no stored token).
+
+1. Set the new version in `pyproject.toml` and in `src/popdgp/__init__.py`
+   (a test checks that the two agree), and merge.
+2. Publish a GitHub Release whose tag is that version (`0.2.0` or `v0.2.0`).
+   The workflow tests, builds, runs the quick start against the built wheel,
+   and uploads to PyPI. It stops if the tag and the version differ.
+
+Running the workflow by hand builds and checks the distribution without
+publishing.
+
+One-time setup, by an owner of the PyPI project: add a trusted publisher on
+PyPI for owner `PolicyEngine`, repository `popdgp`, workflow `release.yml`,
+environment `pypi`. Before the first release this is a "pending publisher",
+which also reserves the name.
+
+A release changes what downstream users pin. Say in the release notes whether
+any metric's output changes for the same inputs and seed.
