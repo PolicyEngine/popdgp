@@ -34,7 +34,10 @@ A survey's holdout is a weighted sample from its view. A candidate is any
 weighted population file (the output of an imputation model, a reweighting
 routine, or a generative model). `popdgp` projects the candidate through each
 view and scores its projection against that view's holdout, in the view's own
-variable space, under both sides' survey weights.
+variable space, under both sides' survey weights. In symbols: survey $s$
+observes a latent population $P$ through a view $V_s$, its holdout $H_s$ is a
+weighted sample from $V_s(P)$, and a candidate $Q$ is scored by comparing
+$V_s(Q)$ with $H_s$.
 
 The package is evaluation-only: it does not build populations, and it takes no
 dependency on any particular generator. It exposes three modules with a plain
@@ -86,16 +89,35 @@ axes, and the sampling-noise floors make the scores interpretable: the gap
 between a candidate and the floor is the part of its score that is not
 irreducible sampling noise.
 
+The framing draws on several literatures. Survey statistics treats multiple
+data sources as observations of one population [@lohr2017combining], and the
+missing-data view of statistical matching treats two surveys as a single file
+with blocks of variables missing by design [@little2002statistical;
+@rassler2002statistical]. The scores come from strictly proper scoring of a
+distributional claim against a realized sample [@gneiting2007strictly;
+@szekely2013energy], classifier two-sample tests [@lopezpaz2017c2st], and the
+precision--recall--density--coverage geometry of generative-model evaluation
+[@naeem2020prdc]. To the author's knowledge, these had not been assembled into
+one operational benchmark for weighted population files.
+
 `popdgp` was extracted, behavior-preserving, from the evaluation harness of the
 PolicyEngine imputation study [@imputation_paper], where it scored candidate
-enhanced-survey populations. Packaging it independently lets other projects
-reuse the harness without depending on that study, and gives the framework a
+enhanced-survey populations. That study is the harness's first application: it
+scores Current Population Survey households carrying imputed wealth against
+held-out Survey of Consumer Finances households, through a single view
+[@imputation_manuscript]. Packaging the harness independently lets other
+projects reuse it without depending on that study, and gives the framework a
 citable reference implementation.
 
 # Metrics
 
 Each metric is a weighted estimator; the descriptions below state what the
-weighted quantity is and why it belongs on the scorecard.
+weighted quantity is and why it belongs on the scorecard. The first four make
+up a view's scorecard, and each is aimed at a failure the others can miss. The
+two pairwise metrics -- energy distance and the precision/recall family -- are
+costly on large samples, so a sample above a size cap (2,048 points by default)
+is first reduced to the cap by a resample drawn in proportion to weight. The
+classifier and the tail block use every row.
 
 - **Weighted energy distance** [@szekely2013energy]. The squared energy
   distance $D^2(P, Q) = 2\,\mathbb{E}\lVert X - Y\rVert - \mathbb{E}\lVert X -
@@ -103,9 +125,10 @@ weighted quantity is and why it belongs on the scorecard.
   empirical measures, with columns standardized by the holdout's weighted
   moments so scores are comparable across views on different scales. It is
   non-negative and zero if and only if the distributions coincide, and it
-  induces a strictly proper scoring rule: a candidate that hedges toward modal
-  households scores strictly worse than one matching the full joint. This is the
-  harness's primary weight-sensitive, joint-distribution block.
+  induces a strictly proper scoring rule [@gneiting2007strictly]: a candidate
+  that hedges toward modal households scores strictly worse than one matching
+  the full joint. This is the harness's primary weight-sensitive,
+  joint-distribution block.
 - **Precision, recall, density, and coverage** [@naeem2020prdc]. Neighbourhood
   radii are $k$-th-nearest-neighbour distances (support geometry); the averages
   over points are weighted. Coverage is the anti-mode-collapse axis -- the
@@ -113,19 +136,27 @@ weighted quantity is and why it belongs on the scorecard.
   radius -- and, because it depends on the candidate only through which records
   exist and not how they are weighted, it is invariant to any reweighting of the
   candidate. It is therefore the calibration-blind block: a diagnostic of
-  support that a reweighting cannot game.
+  support that a reweighting cannot game. The invariance is exact for a
+  candidate no larger than the size cap; a larger candidate is first resampled
+  in proportion to its weights, so its reported coverage is invariant only up
+  to that resample.
 - **Weighted classifier two-sample AUC** [@lopezpaz2017c2st]. A gradient-boosted
   classifier is trained to tell holdout rows from candidate rows, with sample
   weights normalized so each side carries equal total mass, and the
   stratified cross-validated AUC is reported. An AUC of 0.5 means nothing the
   classifier finds separates the two files -- the omnibus complement to the
-  per-axis metrics.
+  per-axis metrics. It responds to any difference in the joint distribution the
+  classifier can learn, including broken dependence between variables whose
+  marginals are each intact.
 - **Weighted Wasserstein-1 distance** [@ramdas2017wasserstein]. The
   earth-mover distance between two one-dimensional weighted samples, obtained by
   integrating the absolute difference of their weighted quantile functions. Per
   imputed target it is scaled by the holdout's weighted standard deviation to
   give a unit-free marginal-fit summary; the view's tail block reports it
-  alongside weighted q90 and q99 ratios (candidate over holdout).
+  alongside weighted q90 and q99 ratios (candidate over holdout). The tail
+  block was added during the first application, when a file whose imputed 99th
+  percentile of net worth was about twice the holdout's tied the same model's
+  weighted fit on the other three blocks [@imputation_manuscript].
 - **Reweighting fragility.** A stress diagnostic, independent of any view: the
   worst-case single-record share of a population aggregate over the family of
   bounded multiplicative reweightings $w_i \mapsto m_i w_i$ with $m_i \in
@@ -162,6 +193,14 @@ in the harness documentation. The metrics are sample-based estimators, so the
 subsampled joint metrics carry Monte Carlo noise above their size cap (the
 sampling-noise floors quantify this); the tail block is computed without a cap
 for that reason.
+
+The first application scores one view from one pair of surveys
+[@imputation_manuscript]. Scoring a single candidate against several surveys at
+once -- for example the Current Population Survey, the Survey of Income and
+Program Participation [@census2023sipp], and the Panel Study of Income Dynamics
+[@psid2023] -- would constrain a candidate more tightly, and is the intended use
+of the harness as a release check on a production file. It is left to future
+work.
 
 # Acknowledgements
 
